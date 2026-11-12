@@ -24,9 +24,24 @@ import {
   TeacherStats,
   updateGiangVien,
 } from './src/features/giangvien/api/giangvien-api';
-import { getActiveApiBaseUrl, setCustomApiBaseUrl } from './src/lib/api-client';
+import { getActiveApiBaseUrl } from './src/lib/api-client';
 
-// Danh sách ảnh mẫu avatar giảng viên chất lượng cao để chọn nhanh
+// ============================================================================
+// BỘ ICON VECTOR CHUẨN SHADCN / LUCIDE (SVG-STYLE MINIMALIST ICONS)
+// ============================================================================
+const IconSearch = () => <Text style={styles.svgIcon}>⌕</Text>;
+const IconPlus = () => <Text style={styles.svgIcon}>+</Text>;
+const IconEdit = () => <Text style={styles.svgIcon}>✎</Text>;
+const IconTrash = () => <Text style={styles.svgIcon}>✕</Text>;
+const IconRefresh = () => <Text style={styles.svgIcon}>↻</Text>;
+const IconDownload = () => <Text style={styles.svgIcon}>↓</Text>;
+const IconCheck = () => <Text style={styles.svgIcon}>✓</Text>;
+const IconSort = () => <Text style={styles.svgIcon}>⇅</Text>;
+const IconDatabase = () => <Text style={styles.svgIcon}>⛁</Text>;
+const IconUsers = () => <Text style={styles.svgIcon}>👥</Text>;
+const IconBook = () => <Text style={styles.svgIcon}>📖</Text>;
+
+// Danh sách ảnh mẫu avatar giảng viên độ phân giải cao, phong thái học thuật nghiêm túc
 const SAMPLE_AVATARS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
   'https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&w=400&q=80',
@@ -62,12 +77,12 @@ export default function App(): React.JSX.Element {
   // Modal Xác nhận Xóa
   const [deletingItem, setDeletingItem] = useState<GiangVienItem | null>(null);
 
-  // Banner thông báo
+  // Banner thông báo thanh lịch
   const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   const showToast = (type: 'success' | 'error', message: string) => {
     setToast({ type, message });
-    setTimeout(() => setToast(null), 4000);
+    setTimeout(() => setToast(null), 3500);
   };
 
   // Tải danh sách & thống kê
@@ -104,9 +119,9 @@ export default function App(): React.JSX.Element {
     try {
       const res = await loginAdmin(username, password);
       setAdminUser(res.user);
-      showToast('success', `Chào mừng ${res.user.displayName}!`);
+      showToast('success', `Đăng nhập thành công: ${res.user.displayName}`);
     } catch (err: any) {
-      setAuthError(err.message || 'Đăng nhập thất bại. Thử admin / admin123');
+      setAuthError(err.message || 'Tài khoản hoặc mật khẩu không chính xác');
     } finally {
       setAuthLoading(false);
     }
@@ -135,32 +150,30 @@ export default function App(): React.JSX.Element {
   // Lưu Form Thêm / Sửa
   const handleSaveForm = async () => {
     if (!formIDGV.trim()) {
-      showToast('error', 'Mã Giảng viên (IDGV) không được để trống!');
+      showToast('error', 'Mã Giảng viên (IDGV) bắt buộc');
       return;
     }
     if (!formFullname.trim()) {
-      showToast('error', 'Họ và tên (Fullname) không được để trống!');
+      showToast('error', 'Họ và tên (Fullname) bắt buộc');
       return;
     }
     const numClass = parseInt(formSumClass, 10);
     if (isNaN(numClass) || numClass < 0) {
-      showToast('error', 'Tổng số lớp (SumClass) phải là số >= 0!');
+      showToast('error', 'Tổng số lớp (SumClass) phải là số >= 0');
       return;
     }
 
     setFormSubmitting(true);
     try {
       if (editingId) {
-        // Sửa
         const updated = await updateGiangVien(editingId, {
           Fullname: formFullname.trim(),
           Image: formImage.trim(),
           SumClass: numClass,
         });
         setTeachers((prev) => prev.map((item) => (item.IDGV === editingId ? updated : item)));
-        showToast('success', `Đã cập nhật thông tin giảng viên ${updated.IDGV}!`);
+        showToast('success', `Đã cập nhật giảng viên ${updated.IDGV}`);
       } else {
-        // Thêm mới
         const created = await createGiangVien({
           IDGV: formIDGV.trim().toUpperCase(),
           Fullname: formFullname.trim(),
@@ -168,12 +181,12 @@ export default function App(): React.JSX.Element {
           SumClass: numClass,
         });
         setTeachers((prev) => [created, ...prev]);
-        showToast('success', `Đã thêm giảng viên ${created.Fullname} (${created.IDGV})!`);
+        showToast('success', `Đã thêm giảng viên ${created.Fullname}`);
       }
       setIsModalOpen(false);
       void loadData();
     } catch (err: any) {
-      showToast('error', err.message || 'Lỗi lưu thông tin giảng viên');
+      showToast('error', err.message || 'Lỗi lưu thông tin');
     } finally {
       setFormSubmitting(false);
     }
@@ -185,11 +198,11 @@ export default function App(): React.JSX.Element {
     try {
       await deleteGiangVien(deletingItem.IDGV);
       setTeachers((prev) => prev.filter((item) => item.IDGV !== deletingItem.IDGV));
-      showToast('success', `Đã xóa giảng viên ${deletingItem.Fullname} (${deletingItem.IDGV}) khỏi CSDL!`);
+      showToast('success', `Đã xóa giảng viên ${deletingItem.IDGV}`);
       setDeletingItem(null);
       void loadData();
     } catch (err: any) {
-      showToast('error', err.message || 'Lỗi khi xóa giảng viên');
+      showToast('error', err.message || 'Lỗi khi xóa');
     }
   };
 
@@ -199,223 +212,245 @@ export default function App(): React.JSX.Element {
       window.open(`${getActiveApiBaseUrl()}/giangvien/export`, '_blank');
       showToast('success', 'Đang tải file CSDL QLHocPhan_GiangVien.json...');
     } else {
-      showToast('success', 'File CSDL đã được lưu trữ sẵn tại root dự án: QLHocPhan_GiangVien.json');
+      showToast('success', 'File CSDL có sẵn tại root: QLHocPhan_GiangVien.json');
     }
   };
 
-  // Lọc và sắp xếp danh sách
+  // Sắp xếp danh sách
   const displayTeachers = [...teachers].sort((a, b) => {
     if (sortBy === 'SUMCLASS_DESC') return b.SumClass - a.SumClass;
     if (sortBy === 'SUMCLASS_ASC') return a.SumClass - b.SumClass;
     return a.IDGV.localeCompare(b.IDGV);
   });
 
-  // MÀN HÌNH 1: ĐĂNG NHẬP ADMIN (NẾU CHƯA ĐĂNG NHẬP)
+  // ============================================================================
+  // MÀN HÌNH 1: ĐĂNG NHẬP ADMIN (TỐI GIẢN, ENTERPRISE CLEAN)
+  // ============================================================================
   if (!adminUser) {
     return (
       <SafeAreaView style={styles.authContainer}>
         <StatusBar style="light" />
         <View style={styles.authCard}>
-          <View style={styles.authBadge}>
-            <Text style={styles.authBadgeText}>HỆ THỐNG QUẢN LÝ HỌC PHẦN</Text>
+          <View style={styles.authHeader}>
+            <View style={styles.logoBadge}>
+              <Text style={styles.logoBadgeText}>QLHOCPHAN</Text>
+            </View>
+            <Text style={styles.authTitle}>Đăng Nhập Phân Hệ Admin</Text>
+            <Text style={styles.authSubtitle}>
+              Cơ sở dữ liệu Học Phần chứa collection Giảng Viên (IDGV, Fullname, Image, SumClass)
+            </Text>
           </View>
-          <Text style={styles.authTitle}>Phân Hệ Admin</Text>
-          <Text style={styles.authSubtitle}>
-            Đăng nhập để quản lý Collection Giảng Viên (IDGV, Fullname, Image, SumClass) trong CSDL QLHocPhan
-          </Text>
 
           {Boolean(authError) && (
-            <View style={styles.errorBox}>
-              <Text style={styles.errorText}>⚠️ {authError}</Text>
+            <View style={styles.errorAlert}>
+              <Text style={styles.errorAlertText}>{authError}</Text>
             </View>
           )}
 
-          <Text style={styles.fieldLabel}>Tên tài khoản</Text>
-          <TextInput
-            style={styles.input}
-            value={username}
-            onChangeText={setUsername}
-            placeholder="admin"
-            placeholderTextColor="#64748B"
-            autoCapitalize="none"
-          />
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Tên đăng nhập</Text>
+            <TextInput
+              style={styles.input}
+              value={username}
+              onChangeText={setUsername}
+              placeholder="admin"
+              placeholderTextColor="#71717a"
+              autoCapitalize="none"
+            />
+          </View>
 
-          <Text style={styles.fieldLabel}>Mật khẩu</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="••••••••"
-            placeholderTextColor="#64748B"
-            secureTextEntry
-          />
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Mật khẩu</Text>
+            <TextInput
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="••••••••"
+              placeholderTextColor="#71717a"
+              secureTextEntry
+            />
+          </View>
 
           <Pressable
-            style={[styles.primaryBtn, authLoading && styles.btnDisabled]}
+            style={[styles.primaryButton, authLoading && styles.btnDisabled]}
             onPress={handleLogin}
             disabled={authLoading}
           >
             {authLoading ? (
-              <ActivityIndicator color="#FFFFFF" />
+              <ActivityIndicator color="#09090b" size="small" />
             ) : (
-              <Text style={styles.primaryBtnText}>Đăng Nhập Vào Hệ Thống</Text>
+              <Text style={styles.primaryButtonText}>Đăng Nhập</Text>
             )}
           </Pressable>
 
           <View style={styles.authFooter}>
-            <Text style={styles.authHint}>Tài khoản mẫu: <Text style={styles.boldText}>admin</Text> | Mật khẩu: <Text style={styles.boldText}>admin123</Text></Text>
+            <Text style={styles.authHintText}>
+              Tài khoản mặc định: <Text style={styles.boldWhite}>admin</Text> / Mật khẩu: <Text style={styles.boldWhite}>admin123</Text>
+            </Text>
           </View>
         </View>
       </SafeAreaView>
     );
   }
 
-  // MÀN HÌNH 2: DASHBOARD QUẢN LÝ GIẢNG VIÊN (PHÂN HỆ ADMIN)
+  // ============================================================================
+  // MÀN HÌNH 2: DASHBOARD CHUẨN SHADCN UI / LINEAR CLEAN
+  // ============================================================================
   return (
-    <SafeAreaView style={styles.mainContainer}>
+    <SafeAreaView style={styles.dashboardContainer}>
       <StatusBar style="light" />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Toast Notification */}
+      <ScrollView contentContainerStyle={styles.dashboardContent}>
+        {/* Toast Alert */}
         {toast && (
-          <View style={[styles.toastContainer, toast.type === 'success' ? styles.toastSuccess : styles.toastError]}>
-            <Text style={styles.toastText}>{toast.type === 'success' ? '✓' : '⚠️'} {toast.message}</Text>
+          <View style={[styles.toastBar, toast.type === 'success' ? styles.toastSuccess : styles.toastError]}>
+            <Text style={styles.toastBarText}>{toast.message}</Text>
           </View>
         )}
 
-        {/* Header Bar */}
-        <View style={styles.topNavbar}>
-          <View>
-            <View style={styles.brandRow}>
-              <View style={styles.brandLogoBox}><Text style={styles.brandLogoText}>QL</Text></View>
-              <Text style={styles.navTitle}>QLHocPhan</Text>
-              <View style={styles.adminTag}><Text style={styles.adminTagText}>ADMIN PANEL</Text></View>
+        {/* Top Navbar */}
+        <View style={styles.navBar}>
+          <View style={styles.navLeft}>
+            <View style={styles.brandIconBox}>
+              <Text style={styles.brandIconText}>HP</Text>
             </View>
-            <Text style={styles.navSub}>Quản lý Giảng viên trong CSDL Học Phần</Text>
+            <View>
+              <View style={styles.navTitleRow}>
+                <Text style={styles.navBrandText}>QLHocPhan</Text>
+                <View style={styles.tagAdmin}>
+                  <Text style={styles.tagAdminText}>ADMIN</Text>
+                </View>
+              </View>
+              <Text style={styles.navSubText}>Phân hệ quản lý danh sách giảng viên</Text>
+            </View>
           </View>
-          <View style={styles.userProfileRow}>
-            <View style={styles.avatarPlaceholder}><Text style={styles.avatarText}>AD</Text></View>
-            <View style={styles.desktopOnly}>
-              <Text style={styles.userName}>{adminUser.displayName}</Text>
-              <Text style={styles.userRole}>Super Admin</Text>
+
+          <View style={styles.navRight}>
+            <View style={styles.adminInfo}>
+              <Text style={styles.adminName}>{adminUser.displayName}</Text>
+              <Text style={styles.adminRole}>admin@danentang</Text>
             </View>
-            <Pressable style={styles.logoutBtn} onPress={() => setAdminUser(null)}>
-              <Text style={styles.logoutBtnText}>Đăng xuất</Text>
+            <Pressable style={styles.outlineButton} onPress={() => setAdminUser(null)}>
+              <Text style={styles.outlineButtonText}>Đăng xuất</Text>
             </Pressable>
           </View>
         </View>
 
         {/* Thống kê Bento Grid */}
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>TỔNG SỐ GIẢNG VIÊN</Text>
-            <Text style={styles.statValue}>{stats?.totalTeachers ?? teachers.length}</Text>
-            <Text style={styles.statSub}>Đang hoạt động trong CSDL</Text>
+        <View style={styles.statsRow}>
+          <View style={styles.statBox}>
+            <Text style={styles.statBoxLabel}>TỔNG GIẢNG VIÊN</Text>
+            <Text style={styles.statBoxNumber}>{stats?.totalTeachers ?? teachers.length}</Text>
+            <Text style={styles.statBoxDesc}>Bản ghi trong CSDL</Text>
           </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>TỔNG SỐ LỚP HỌC</Text>
-            <Text style={styles.statValue}>{stats?.totalClasses ?? teachers.reduce((a, b) => a + b.SumClass, 0)}</Text>
-            <Text style={styles.statSub}>Lớp học phần phân công</Text>
+
+          <View style={styles.statBox}>
+            <Text style={styles.statBoxLabel}>TỔNG SỐ LỚP</Text>
+            <Text style={styles.statBoxNumber}>{stats?.totalClasses ?? teachers.reduce((a, b) => a + b.SumClass, 0)}</Text>
+            <Text style={styles.statBoxDesc}>Lớp học phần phụ trách</Text>
           </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>TRUNG BÌNH LỚP / GV</Text>
-            <Text style={styles.statValue}>{stats?.avgClasses ?? 0}</Text>
-            <Text style={styles.statSub}>Chỉ tiêu giảng dạy</Text>
+
+          <View style={styles.statBox}>
+            <Text style={styles.statBoxLabel}>TRUNG BÌNH LỚP</Text>
+            <Text style={styles.statBoxNumber}>{stats?.avgClasses ?? 0}</Text>
+            <Text style={styles.statBoxDesc}>Lớp / mỗi giảng viên</Text>
           </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statLabel}>CƠ SỞ DỮ LIỆU</Text>
-            <Text style={[styles.statValue, { fontSize: 18, color: '#10B981' }]}>SUPABASE</Text>
-            <Text style={styles.statSub}>Bảng: GiangVien (4 fields)</Text>
+
+          <View style={styles.statBox}>
+            <Text style={styles.statBoxLabel}>CƠ SỞ DỮ LIỆU</Text>
+            <Text style={[styles.statBoxNumber, { fontSize: 16, color: '#e4e4e7' }]}>SUPABASE</Text>
+            <Text style={styles.statBoxDesc}>Table: GiangVien (4 fields)</Text>
           </View>
         </View>
 
-        {/* Thanh Công Cụ Nâng Cao (Search, Filter, Export, Add) */}
-        <View style={styles.toolbarCard}>
-          <View style={styles.searchRow}>
+        {/* Action Toolbar */}
+        <View style={styles.toolbar}>
+          <View style={styles.searchContainer}>
             <TextInput
-              style={styles.searchInput}
-              placeholder="🔍 Tìm kiếm theo Mã GV (IDGV) hoặc Họ tên..."
-              placeholderTextColor="#64748B"
+              style={styles.searchField}
+              placeholder="Tìm kiếm theo mã GV (IDGV) hoặc Họ tên..."
+              placeholderTextColor="#71717a"
               value={searchQuery}
               onChangeText={(text) => {
                 setSearchQuery(text);
                 void loadData(text);
               }}
             />
-            <Pressable style={styles.btnSecondary} onPress={() => void loadData()}>
-              <Text style={styles.btnSecondaryText}>↻ Tải lại</Text>
-            </Pressable>
           </View>
 
-          <View style={styles.actionRow}>
-            <View style={styles.sortGroup}>
-              <Text style={styles.sortLabel}>Sắp xếp lớp:</Text>
-              <Pressable
-                style={[styles.sortBtn, sortBy === 'SUMCLASS_DESC' && styles.sortBtnActive]}
-                onPress={() => setSortBy(sortBy === 'SUMCLASS_DESC' ? 'NONE' : 'SUMCLASS_DESC')}
-              >
-                <Text style={styles.sortBtnText}>↓ Giảm dần</Text>
-              </Pressable>
-              <Pressable
-                style={[styles.sortBtn, sortBy === 'SUMCLASS_ASC' && styles.sortBtnActive]}
-                onPress={() => setSortBy(sortBy === 'SUMCLASS_ASC' ? 'NONE' : 'SUMCLASS_ASC')}
-              >
-                <Text style={styles.sortBtnText}>↑ Tăng dần</Text>
-              </Pressable>
-            </View>
+          <View style={styles.toolbarButtons}>
+            <Pressable
+              style={[styles.toolButton, sortBy !== 'NONE' && styles.toolButtonActive]}
+              onPress={() => setSortBy(sortBy === 'SUMCLASS_DESC' ? 'NONE' : 'SUMCLASS_DESC')}
+            >
+              <Text style={styles.toolButtonText}>
+                {sortBy === 'SUMCLASS_DESC' ? '↓ Lớp giảm dần' : 'Sắp xếp lớp'}
+              </Text>
+            </Pressable>
 
-            <View style={styles.rightActions}>
-              <Pressable style={styles.exportBtn} onPress={handleExportDatabase}>
-                <Text style={styles.exportBtnText}>📥 Xuất File CSDL JSON</Text>
-              </Pressable>
-              <Pressable style={styles.primaryBtnSmall} onPress={openCreateModal}>
-                <Text style={styles.primaryBtnSmallText}>+ Thêm Giảng Viên</Text>
-              </Pressable>
-            </View>
+            <Pressable style={styles.toolButton} onPress={() => void loadData()}>
+              <Text style={styles.toolButtonText}>Làm mới</Text>
+            </Pressable>
+
+            <Pressable style={styles.toolButton} onPress={handleExportDatabase}>
+              <Text style={styles.toolButtonText}>Xuất JSON CSDL</Text>
+            </Pressable>
+
+            <Pressable style={styles.actionPrimaryButton} onPress={openCreateModal}>
+              <Text style={styles.actionPrimaryButtonText}>+ Thêm Giảng Viên</Text>
+            </Pressable>
           </View>
         </View>
 
-        {/* Danh Sách Giảng Viên (Responsive Web & Mobile Card) */}
-        <View style={styles.listContainer}>
-          <View style={styles.listHeaderRow}>
-            <Text style={styles.listTitle}>Danh Sách Giảng Viên Học Phần ({displayTeachers.length})</Text>
-            <Text style={styles.ruleBadge}>Chuẩn CSDL: IDGV, Fullname, Image, SumClass</Text>
+        {/* Bảng Danh Sách Giảng Viên (Modern Clean Data Table) */}
+        <View style={styles.tableCard}>
+          <View style={styles.tableCardHeader}>
+            <Text style={styles.tableCardTitle}>Danh Sách Giảng Viên Học Phần</Text>
+            <Text style={styles.tableCardSubtitle}>
+              Quy chuẩn 4 trường dữ liệu: IDGV, Fullname, Image, SumClass
+            </Text>
           </View>
 
           {loading ? (
-            <View style={styles.centerBox}>
-              <ActivityIndicator size="large" color="#38BDF8" />
-              <Text style={styles.loadingText}>Đang tải danh sách giảng viên...</Text>
+            <View style={styles.loadingContainer}>
+              <ActivityIndicator color="#fafafa" size="small" />
+              <Text style={styles.loadingMessage}>Đang tải dữ liệu từ CSDL...</Text>
             </View>
           ) : displayTeachers.length === 0 ? (
-            <View style={styles.emptyBox}>
-              <Text style={styles.emptyTitle}>Chưa có giảng viên nào</Text>
-              <Text style={styles.emptySub}>Bấm "+ Thêm Giảng Viên" để thêm mới vào CSDL QLHocPhan</Text>
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyHeader}>Không có giảng viên nào</Text>
+              <Text style={styles.emptyDescription}>Bấm "+ Thêm Giảng Viên" để nhập bản ghi mới</Text>
             </View>
           ) : (
-            <View style={styles.cardGrid}>
-              {displayTeachers.map((teacher) => (
-                <View key={teacher.IDGV} style={styles.teacherCard}>
-                  <View style={styles.cardTopRow}>
-                    <Image source={{ uri: teacher.Image }} style={styles.teacherAvatar} />
-                    <View style={styles.teacherInfo}>
-                      <View style={styles.idgvBadge}>
-                        <Text style={styles.idgvText}>{teacher.IDGV}</Text>
+            <View style={styles.tableBody}>
+              {displayTeachers.map((teacher, index) => (
+                <View key={teacher.IDGV} style={[styles.tableRow, index % 2 === 1 && styles.tableRowAlt]}>
+                  {/* Avatar & Identity */}
+                  <View style={styles.cellAvatar}>
+                    <Image source={{ uri: teacher.Image }} style={styles.avatarImg} />
+                  </View>
+
+                  <View style={styles.cellMain}>
+                    <View style={styles.rowTop}>
+                      <View style={styles.badgeIdgv}>
+                        <Text style={styles.badgeIdgvText}>{teacher.IDGV}</Text>
                       </View>
-                      <Text style={styles.teacherName} numberOfLines={1}>{teacher.Fullname}</Text>
-                      <View style={styles.sumClassBadge}>
-                        <Text style={styles.sumClassText}>📚 {teacher.SumClass} Lớp học phần</Text>
-                      </View>
+                      <Text style={styles.teacherFullName}>{teacher.Fullname}</Text>
+                    </View>
+
+                    <View style={styles.rowBottom}>
+                      <Text style={styles.classCountText}>
+                        Tổng số lớp: <Text style={styles.classCountBold}>{teacher.SumClass}</Text> lớp
+                      </Text>
                     </View>
                   </View>
 
-                  <View style={styles.cardDivider} />
-
-                  <View style={styles.cardActionsRow}>
-                    <Pressable style={styles.editBtn} onPress={() => openEditModal(teacher)}>
-                      <Text style={styles.editBtnText}>✏️ Sửa</Text>
+                  {/* Actions */}
+                  <View style={styles.cellActions}>
+                    <Pressable style={styles.btnRowAction} onPress={() => openEditModal(teacher)}>
+                      <Text style={styles.btnRowActionText}>Sửa</Text>
                     </Pressable>
-                    <Pressable style={styles.deleteBtn} onPress={() => setDeletingItem(teacher)}>
-                      <Text style={styles.deleteBtnText}>🗑 Xóa</Text>
+                    <Pressable style={styles.btnRowActionDelete} onPress={() => setDeletingItem(teacher)}>
+                      <Text style={styles.btnRowActionDeleteText}>Xóa</Text>
                     </Pressable>
                   </View>
                 </View>
@@ -425,96 +460,100 @@ export default function App(): React.JSX.Element {
         </View>
       </ScrollView>
 
-      {/* MODAL THÊM / SỬA GIẢNG VIÊN (CHUẨN SHADCN MODAL) */}
+      {/* MODAL FORM THÊM / SỬA (ENTERPRISE SHADCN DIALOG) */}
       <Modal visible={isModalOpen} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>
-                {editingId ? 'Cập Nhật Giảng Viên' : 'Thêm Giảng Viên Vào CSDL'}
+        <View style={styles.dialogOverlay}>
+          <View style={styles.dialogCard}>
+            <View style={styles.dialogHeader}>
+              <Text style={styles.dialogTitle}>
+                {editingId ? 'Cập Nhật Giảng Viên' : 'Thêm Giảng Viên Mới'}
               </Text>
               <Pressable onPress={() => setIsModalOpen(false)}>
-                <Text style={styles.closeBtn}>✕</Text>
+                <Text style={styles.dialogCloseButton}>✕</Text>
               </Pressable>
             </View>
-            <Text style={styles.modalSubtitle}>
-              Cơ sở dữ liệu QLHocPhan gồm đúng 4 trường: IDGV, Fullname, Image, SumClass
+            <Text style={styles.dialogDesc}>
+              Bắt buộc đúng 4 trường: IDGV, Fullname, Image, SumClass
             </Text>
 
-            <ScrollView style={styles.modalBody}>
-              {/* Mã Giảng viên (IDGV) */}
-              <Text style={styles.fieldLabel}>1. Mã Giảng Viên (IDGV) *</Text>
-              <TextInput
-                style={[styles.input, editingId ? styles.inputDisabled : null]}
-                value={formIDGV}
-                onChangeText={setFormIDGV}
-                editable={!editingId}
-                placeholder="VD: GV001"
-                placeholderTextColor="#64748B"
-              />
-
-              {/* Họ và tên (Fullname) */}
-              <Text style={styles.fieldLabel}>2. Họ và tên Giảng Viên (Fullname) *</Text>
-              <TextInput
-                style={styles.input}
-                value={formFullname}
-                onChangeText={setFormFullname}
-                placeholder="VD: TS. Nguyễn Văn An"
-                placeholderTextColor="#64748B"
-              />
-
-              {/* Hình ảnh (Image) - URL & Chọn mẫu ảnh trực quan */}
-              <Text style={styles.fieldLabel}>3. Hình ảnh đại diện (Image URL) *</Text>
-              <View style={styles.imageInputRow}>
-                <Image source={{ uri: formImage }} style={styles.previewImage} />
+            <ScrollView style={styles.dialogBody}>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>1. Mã Giảng Viên (IDGV) *</Text>
                 <TextInput
-                  style={[styles.input, { flex: 1, marginLeft: 10 }]}
-                  value={formImage}
-                  onChangeText={setFormImage}
-                  placeholder="https://..."
-                  placeholderTextColor="#64748B"
+                  style={[styles.input, editingId ? styles.inputReadOnly : null]}
+                  value={formIDGV}
+                  onChangeText={setFormIDGV}
+                  editable={!editingId}
+                  placeholder="GV001"
+                  placeholderTextColor="#71717a"
                 />
               </View>
 
-              <Text style={styles.subFieldLabel}>Hoặc chọn nhanh avatar mẫu có sẵn:</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.avatarPickerRow}>
-                {SAMPLE_AVATARS.map((url, idx) => (
-                  <Pressable
-                    key={idx}
-                    onPress={() => setFormImage(url)}
-                    style={[styles.avatarChoice, formImage === url && styles.avatarChoiceSelected]}
-                  >
-                    <Image source={{ uri: url }} style={styles.choiceThumb} />
-                  </Pressable>
-                ))}
-              </ScrollView>
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>2. Họ và tên Giảng Viên (Fullname) *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formFullname}
+                  onChangeText={setFormFullname}
+                  placeholder="TS. Nguyễn Văn An"
+                  placeholderTextColor="#71717a"
+                />
+              </View>
 
-              {/* Tổng số lớp (SumClass) */}
-              <Text style={styles.fieldLabel}>4. Tổng số lớp phụ trách (SumClass) *</Text>
-              <TextInput
-                style={styles.input}
-                value={formSumClass}
-                onChangeText={setFormSumClass}
-                keyboardType="numeric"
-                placeholder="VD: 5"
-                placeholderTextColor="#64748B"
-              />
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>3. Link hình ảnh (Image URL) *</Text>
+                <View style={styles.imageInputWrap}>
+                  <Image source={{ uri: formImage }} style={styles.avatarPreview} />
+                  <TextInput
+                    style={[styles.input, { flex: 1, marginLeft: 12 }]}
+                    value={formImage}
+                    onChangeText={setFormImage}
+                    placeholder="https://..."
+                    placeholderTextColor="#71717a"
+                  />
+                </View>
+
+                <Text style={styles.subLabel}>Hoặc nhấp chọn avatar mẫu:</Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.avatarPickerList}>
+                  {SAMPLE_AVATARS.map((url, idx) => (
+                    <Pressable
+                      key={idx}
+                      onPress={() => setFormImage(url)}
+                      style={[styles.sampleAvatarItem, formImage === url && styles.sampleAvatarActive]}
+                    >
+                      <Image source={{ uri: url }} style={styles.sampleAvatarImg} />
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+
+              <View style={styles.formGroup}>
+                <Text style={styles.label}>4. Tổng số lớp phụ trách (SumClass) *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={formSumClass}
+                  onChangeText={setFormSumClass}
+                  keyboardType="numeric"
+                  placeholder="5"
+                  placeholderTextColor="#71717a"
+                />
+              </View>
             </ScrollView>
 
-            <View style={styles.modalFooter}>
-              <Pressable style={styles.btnSecondary} onPress={() => setIsModalOpen(false)}>
-                <Text style={styles.btnSecondaryText}>Hủy bỏ</Text>
+            <View style={styles.dialogFooter}>
+              <Pressable style={styles.outlineButton} onPress={() => setIsModalOpen(false)}>
+                <Text style={styles.outlineButtonText}>Hủy</Text>
               </Pressable>
               <Pressable
-                style={[styles.primaryBtnSmall, formSubmitting && styles.btnDisabled]}
+                style={[styles.primaryButton, formSubmitting && styles.btnDisabled]}
                 onPress={handleSaveForm}
                 disabled={formSubmitting}
               >
                 {formSubmitting ? (
-                  <ActivityIndicator color="#FFF" />
+                  <ActivityIndicator color="#09090b" size="small" />
                 ) : (
-                  <Text style={styles.primaryBtnSmallText}>
-                    {editingId ? 'Cập Nhật' : 'Lưu Vào CSDL'}
+                  <Text style={styles.primaryButtonText}>
+                    {editingId ? 'Cập Nhật' : 'Lưu Bản Ghi'}
                   </Text>
                 )}
               </Pressable>
@@ -525,18 +564,18 @@ export default function App(): React.JSX.Element {
 
       {/* MODAL XÁC NHẬN XÓA */}
       <Modal visible={Boolean(deletingItem)} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, { maxWidth: 440 }]}>
-            <Text style={styles.modalTitle}>Xác Nhận Xóa Giảng Viên?</Text>
-            <Text style={styles.modalSubtitle}>
-              Hành động này sẽ xóa hoàn toàn giảng viên <Text style={styles.boldText}>{deletingItem?.Fullname}</Text> (Mã: <Text style={styles.boldText}>{deletingItem?.IDGV}</Text>) khỏi CSDL QLHocPhan.
+        <View style={styles.dialogOverlay}>
+          <View style={[styles.dialogCard, { maxWidth: 440 }]}>
+            <Text style={styles.dialogTitle}>Xác Nhận Xóa Giảng Viên</Text>
+            <Text style={styles.dialogDesc}>
+              Bản ghi <Text style={styles.boldWhite}>{deletingItem?.Fullname}</Text> ({deletingItem?.IDGV}) sẽ bị xóa hoàn toàn khỏi cơ sở dữ liệu.
             </Text>
-            <View style={styles.modalFooter}>
-              <Pressable style={styles.btnSecondary} onPress={() => setDeletingItem(null)}>
-                <Text style={styles.btnSecondaryText}>Hủy</Text>
+            <View style={styles.dialogFooter}>
+              <Pressable style={styles.outlineButton} onPress={() => setDeletingItem(null)}>
+                <Text style={styles.outlineButtonText}>Hủy</Text>
               </Pressable>
-              <Pressable style={styles.deleteConfirmBtn} onPress={handleConfirmDelete}>
-                <Text style={styles.deleteConfirmBtnText}>Xóa Vĩnh Viễn</Text>
+              <Pressable style={styles.deleteConfirmButton} onPress={handleConfirmDelete}>
+                <Text style={styles.deleteConfirmButtonText}>Xác Nhận Xóa</Text>
               </Pressable>
             </View>
           </View>
@@ -547,614 +586,558 @@ export default function App(): React.JSX.Element {
 }
 
 const styles = StyleSheet.create({
+  // Global & Theme Constants (Shadcn Zinc Minimalist)
+  svgIcon: {
+    fontSize: 14,
+    color: '#a1a1aa',
+  },
+  boldWhite: {
+    color: '#fafafa',
+    fontWeight: '600',
+  },
+
+  // Auth Screen
   authContainer: {
     flex: 1,
-    backgroundColor: '#090D16',
+    backgroundColor: '#09090b',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
   },
   authCard: {
     width: '100%',
-    maxWidth: 420,
-    backgroundColor: '#0F172A',
-    borderRadius: 20,
+    maxWidth: 400,
+    backgroundColor: '#18181b',
+    borderRadius: 12,
     padding: 28,
     borderWidth: 1,
-    borderColor: '#1E293B',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
+    borderColor: '#27272a',
   },
-  authBadge: {
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-    alignSelf: 'flex-start',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: 'rgba(56, 189, 248, 0.3)',
-    marginBottom: 12,
-  },
-  authBadgeText: {
-    color: '#38BDF8',
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1,
-  },
-  authTitle: {
-    color: '#F8FAFC',
-    fontSize: 26,
-    fontWeight: '800',
-    marginBottom: 6,
-  },
-  authSubtitle: {
-    color: '#94A3B8',
-    fontSize: 13,
-    lineHeight: 18,
+  authHeader: {
     marginBottom: 20,
   },
-  errorBox: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+  logoBadge: {
+    backgroundColor: '#27272a',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+    marginBottom: 12,
+  },
+  logoBadgeText: {
+    color: '#a1a1aa',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  authTitle: {
+    color: '#fafafa',
+    fontSize: 22,
+    fontWeight: '700',
+    letterSpacing: -0.5,
+  },
+  authSubtitle: {
+    color: '#a1a1aa',
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: 4,
+  },
+  errorAlert: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
     borderWidth: 1,
-    borderColor: '#EF4444',
-    padding: 10,
+    borderColor: 'rgba(239, 68, 68, 0.3)',
     borderRadius: 8,
-    marginBottom: 16,
+    padding: 10,
+    marginBottom: 14,
   },
-  errorText: {
-    color: '#FCA5A5',
+  errorAlertText: {
+    color: '#f87171',
     fontSize: 12,
-    fontWeight: '600',
   },
-  fieldLabel: {
-    color: '#CBD5E1',
-    fontSize: 12,
-    fontWeight: '600',
+  formGroup: {
+    marginBottom: 14,
+  },
+  label: {
+    color: '#e4e4e7',
+    fontSize: 13,
+    fontWeight: '500',
     marginBottom: 6,
-    marginTop: 8,
   },
-  subFieldLabel: {
-    color: '#64748B',
+  subLabel: {
+    color: '#71717a',
     fontSize: 11,
     marginTop: 6,
     marginBottom: 6,
   },
   input: {
-    backgroundColor: '#0B1120',
+    backgroundColor: '#09090b',
     borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 10,
-    paddingHorizontal: 14,
+    borderColor: '#27272a',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    color: '#fafafa',
+    fontSize: 13,
+  },
+  inputReadOnly: {
+    backgroundColor: '#18181b',
+    color: '#71717a',
+  },
+  primaryButton: {
+    backgroundColor: '#fafafa',
+    borderRadius: 8,
     paddingVertical: 10,
-    color: '#F8FAFC',
-    fontSize: 14,
-  },
-  inputDisabled: {
-    backgroundColor: '#1E293B',
-    color: '#94A3B8',
-  },
-  primaryBtn: {
-    backgroundColor: '#0284C7',
-    borderRadius: 10,
-    paddingVertical: 12,
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: 10,
   },
-  primaryBtnText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '700',
+  primaryButtonText: {
+    color: '#09090b',
+    fontSize: 13,
+    fontWeight: '600',
   },
   btnDisabled: {
-    opacity: 0.6,
+    opacity: 0.5,
   },
   authFooter: {
-    marginTop: 20,
+    marginTop: 18,
     alignItems: 'center',
   },
-  authHint: {
-    color: '#64748B',
+  authHintText: {
+    color: '#71717a',
     fontSize: 12,
   },
-  boldText: {
-    color: '#F1F5F9',
-    fontWeight: '700',
-  },
 
-  // Main Dashboard Styles
-  mainContainer: {
+  // Dashboard Layout
+  dashboardContainer: {
     flex: 1,
-    backgroundColor: '#090D16',
+    backgroundColor: '#09090b',
   },
-  scrollContent: {
-    padding: 20,
+  dashboardContent: {
+    padding: 24,
     paddingBottom: 60,
-    maxWidth: 1100,
+    maxWidth: 1040,
     width: '100%',
     alignSelf: 'center',
   },
-  toastContainer: {
+  toastBar: {
     padding: 12,
-    borderRadius: 10,
+    borderRadius: 8,
     marginBottom: 16,
     borderWidth: 1,
   },
   toastSuccess: {
-    backgroundColor: 'rgba(16, 185, 129, 0.2)',
-    borderColor: '#10B981',
+    backgroundColor: '#18181b',
+    borderColor: '#27272a',
   },
   toastError: {
-    backgroundColor: 'rgba(239, 68, 68, 0.2)',
-    borderColor: '#EF4444',
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    borderColor: '#7f1d1d',
   },
-  toastText: {
-    color: '#F8FAFC',
+  toastBarText: {
+    color: '#fafafa',
     fontSize: 13,
-    fontWeight: '600',
   },
-  topNavbar: {
+  navBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#0F172A',
-    padding: 16,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#1E293B',
-    marginBottom: 16,
-  },
-  brandRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  brandLogoBox: {
-    backgroundColor: '#0284C7',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  brandLogoText: {
-    color: '#FFFFFF',
-    fontWeight: '900',
-    fontSize: 12,
-  },
-  navTitle: {
-    color: '#F8FAFC',
-    fontSize: 20,
-    fontWeight: '800',
-  },
-  adminTag: {
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#38BDF8',
-  },
-  adminTagText: {
-    color: '#38BDF8',
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  navSub: {
-    color: '#94A3B8',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  userProfileRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  avatarPlaceholder: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: '#1E293B',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  avatarText: {
-    color: '#38BDF8',
-    fontWeight: '700',
-    fontSize: 12,
-  },
-  desktopOnly: {
-    display: 'flex',
-  },
-  userName: {
-    color: '#F8FAFC',
-    fontSize: 13,
-    fontWeight: '700',
-  },
-  userRole: {
-    color: '#64748B',
-    fontSize: 11,
-  },
-  logoutBtn: {
-    backgroundColor: '#1E293B',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#334155',
-  },
-  logoutBtnText: {
-    color: '#CBD5E1',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-
-  // Stats Grid
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-    marginBottom: 16,
-  },
-  statCard: {
-    flex: 1,
-    minWidth: '22%',
-    backgroundColor: '#0F172A',
-    borderRadius: 14,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#1E293B',
-  },
-  statLabel: {
-    color: '#64748B',
-    fontSize: 11,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  statValue: {
-    color: '#F8FAFC',
-    fontSize: 26,
-    fontWeight: '800',
-    marginVertical: 4,
-  },
-  statSub: {
-    color: '#94A3B8',
-    fontSize: 11,
-  },
-
-  // Toolbar
-  toolbarCard: {
-    backgroundColor: '#0F172A',
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#1E293B',
-    marginBottom: 16,
-    gap: 12,
-  },
-  searchRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  searchInput: {
-    flex: 1,
-    backgroundColor: '#0B1120',
-    borderWidth: 1,
-    borderColor: '#334155',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    color: '#F8FAFC',
-    fontSize: 13,
-  },
-  btnSecondary: {
-    backgroundColor: '#1E293B',
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: '#334155',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnSecondaryText: {
-    color: '#CBD5E1',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: 10,
-  },
-  sortGroup: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  sortLabel: {
-    color: '#64748B',
-    fontSize: 12,
-  },
-  sortBtn: {
-    backgroundColor: '#0B1120',
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#1E293B',
-  },
-  sortBtnActive: {
-    borderColor: '#38BDF8',
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-  },
-  sortBtnText: {
-    color: '#CBD5E1',
-    fontSize: 12,
-  },
-  rightActions: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  exportBtn: {
-    backgroundColor: '#1E293B',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#10B981',
-  },
-  exportBtnText: {
-    color: '#10B981',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-  primaryBtnSmall: {
-    backgroundColor: '#0284C7',
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  primaryBtnSmallText: {
-    color: '#FFFFFF',
-    fontSize: 12,
-    fontWeight: '700',
-  },
-
-  // Danh Sách
-  listContainer: {
-    backgroundColor: '#0F172A',
-    borderRadius: 16,
-    padding: 18,
-    borderWidth: 1,
-    borderColor: '#1E293B',
-  },
-  listHeaderRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 14,
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  listTitle: {
-    color: '#F8FAFC',
-    fontSize: 16,
-    fontWeight: '800',
-  },
-  ruleBadge: {
-    color: '#38BDF8',
-    fontSize: 11,
-    fontWeight: '600',
-    backgroundColor: 'rgba(56, 189, 248, 0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 6,
-  },
-  cardGrid: {
-    gap: 12,
-  },
-  teacherCard: {
-    backgroundColor: '#0B1120',
+    backgroundColor: '#18181b',
     borderRadius: 12,
-    padding: 14,
+    padding: 16,
     borderWidth: 1,
-    borderColor: '#1E293B',
+    borderColor: '#27272a',
+    marginBottom: 16,
   },
-  cardTopRow: {
+  navLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 14,
+    gap: 12,
   },
-  teacherAvatar: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: '#1E293B',
+  brandIconBox: {
+    width: 38,
+    height: 38,
+    borderRadius: 8,
+    backgroundColor: '#27272a',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  teacherInfo: {
-    flex: 1,
-    gap: 4,
+  brandIconText: {
+    color: '#fafafa',
+    fontWeight: '700',
+    fontSize: 14,
   },
-  idgvBadge: {
-    backgroundColor: 'rgba(56, 189, 248, 0.15)',
-    alignSelf: 'flex-start',
+  navTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  navBrandText: {
+    color: '#fafafa',
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.3,
+  },
+  tagAdmin: {
+    backgroundColor: '#27272a',
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 4,
   },
-  idgvText: {
-    color: '#38BDF8',
-    fontSize: 11,
-    fontWeight: '800',
-  },
-  teacherName: {
-    color: '#F8FAFC',
-    fontSize: 16,
+  tagAdminText: {
+    color: '#a1a1aa',
+    fontSize: 10,
     fontWeight: '700',
   },
-  sumClassBadge: {
-    alignSelf: 'flex-start',
-  },
-  sumClassText: {
-    color: '#10B981',
+  navSubText: {
+    color: '#71717a',
     fontSize: 12,
-    fontWeight: '600',
+    marginTop: 2,
   },
-  cardDivider: {
-    height: 1,
-    backgroundColor: '#1E293B',
-    marginVertical: 12,
-  },
-  cardActionsRow: {
+  navRight: {
     flexDirection: 'row',
-    justifyContent: 'flex-end',
-    gap: 8,
+    alignItems: 'center',
+    gap: 12,
   },
-  editBtn: {
-    backgroundColor: '#1E293B',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#38BDF8',
+  adminInfo: {
+    alignItems: 'flex-end',
   },
-  editBtnText: {
-    color: '#38BDF8',
-    fontSize: 12,
+  adminName: {
+    color: '#fafafa',
+    fontSize: 13,
     fontWeight: '600',
   },
-  deleteBtn: {
-    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+  adminRole: {
+    color: '#71717a',
+    fontSize: 11,
+  },
+  outlineButton: {
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: '#27272a',
+    borderRadius: 6,
     paddingHorizontal: 12,
     paddingVertical: 6,
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: '#EF4444',
   },
-  deleteBtnText: {
-    color: '#FCA5A5',
+  outlineButtonText: {
+    color: '#e4e4e7',
     fontSize: 12,
-    fontWeight: '600',
-  },
-  centerBox: {
-    paddingVertical: 40,
-    alignItems: 'center',
-  },
-  loadingText: {
-    color: '#94A3B8',
-    marginTop: 8,
-    fontSize: 13,
-  },
-  emptyBox: {
-    paddingVertical: 40,
-    alignItems: 'center',
-  },
-  emptyTitle: {
-    color: '#F8FAFC',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  emptySub: {
-    color: '#64748B',
-    fontSize: 13,
-    marginTop: 4,
+    fontWeight: '500',
   },
 
-  // Modal Styles
-  modalOverlay: {
+  // Stats Bento
+  statsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+    marginBottom: 16,
+  },
+  statBox: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+    minWidth: '22%',
+    backgroundColor: '#18181b',
+    borderRadius: 10,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#27272a',
+  },
+  statBoxLabel: {
+    color: '#71717a',
+    fontSize: 11,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  statBoxNumber: {
+    color: '#fafafa',
+    fontSize: 24,
+    fontWeight: '700',
+    marginVertical: 4,
+    letterSpacing: -0.5,
+  },
+  statBoxDesc: {
+    color: '#71717a',
+    fontSize: 12,
+  },
+
+  // Toolbar
+  toolbar: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    gap: 10,
+    backgroundColor: '#18181b',
+    borderRadius: 10,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: '#27272a',
+    marginBottom: 16,
+  },
+  searchContainer: {
+    flex: 1,
+    minWidth: 260,
+  },
+  searchField: {
+    backgroundColor: '#09090b',
+    borderWidth: 1,
+    borderColor: '#27272a',
+    borderRadius: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    color: '#fafafa',
+    fontSize: 13,
+  },
+  toolbarButtons: {
+    flexDirection: 'row',
+    gap: 8,
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  toolButton: {
+    backgroundColor: '#27272a',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 6,
+  },
+  toolButtonActive: {
+    backgroundColor: '#3f3f46',
+  },
+  toolButtonText: {
+    color: '#e4e4e7',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  actionPrimaryButton: {
+    backgroundColor: '#fafafa',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 6,
+  },
+  actionPrimaryButtonText: {
+    color: '#09090b',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+
+  // Table Card
+  tableCard: {
+    backgroundColor: '#18181b',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#27272a',
+    overflow: 'hidden',
+  },
+  tableCardHeader: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#27272a',
+  },
+  tableCardTitle: {
+    color: '#fafafa',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  tableCardSubtitle: {
+    color: '#71717a',
+    fontSize: 12,
+    marginTop: 2,
+  },
+  tableBody: {
+    padding: 6,
+  },
+  tableRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 8,
+    gap: 14,
+  },
+  tableRowAlt: {
+    backgroundColor: 'rgba(255, 255, 255, 0.015)',
+  },
+  cellAvatar: {
+    width: 44,
+    height: 44,
+  },
+  avatarImg: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#27272a',
+  },
+  cellMain: {
+    flex: 1,
+    gap: 4,
+  },
+  rowTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  badgeIdgv: {
+    backgroundColor: '#27272a',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  badgeIdgvText: {
+    color: '#e4e4e7',
+    fontSize: 11,
+    fontWeight: '700',
+  },
+  teacherFullName: {
+    color: '#fafafa',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  rowBottom: {
+    flexDirection: 'row',
+  },
+  classCountText: {
+    color: '#a1a1aa',
+    fontSize: 12,
+  },
+  classCountBold: {
+    color: '#fafafa',
+    fontWeight: '700',
+  },
+  cellActions: {
+    flexDirection: 'row',
+    gap: 6,
+  },
+  btnRowAction: {
+    backgroundColor: '#27272a',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  btnRowActionText: {
+    color: '#e4e4e7',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  btnRowActionDelete: {
+    backgroundColor: 'rgba(239, 68, 68, 0.1)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 5,
+  },
+  btnRowActionDeleteText: {
+    color: '#f87171',
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    gap: 8,
+  },
+  loadingMessage: {
+    color: '#71717a',
+    fontSize: 12,
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyHeader: {
+    color: '#fafafa',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  emptyDescription: {
+    color: '#71717a',
+    fontSize: 12,
+    marginTop: 2,
+  },
+
+  // Dialog / Modal
+  dialogOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.8)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: 16,
   },
-  modalContent: {
+  dialogCard: {
     width: '100%',
-    maxWidth: 520,
-    backgroundColor: '#0F172A',
-    borderRadius: 20,
+    maxWidth: 480,
+    backgroundColor: '#18181b',
+    borderRadius: 12,
     padding: 22,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#27272a',
   },
-  modalHeader: {
+  dialogHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  modalTitle: {
-    color: '#F8FAFC',
-    fontSize: 18,
-    fontWeight: '800',
+  dialogTitle: {
+    color: '#fafafa',
+    fontSize: 17,
+    fontWeight: '600',
   },
-  closeBtn: {
-    color: '#94A3B8',
-    fontSize: 18,
-    fontWeight: '700',
+  dialogCloseButton: {
+    color: '#71717a',
+    fontSize: 16,
     padding: 4,
   },
-  modalSubtitle: {
-    color: '#64748B',
+  dialogDesc: {
+    color: '#71717a',
     fontSize: 12,
-    marginTop: 4,
-    marginBottom: 14,
+    marginTop: 2,
+    marginBottom: 16,
   },
-  modalBody: {
-    maxHeight: 420,
+  dialogBody: {
+    maxHeight: 380,
   },
-  imageInputRow: {
+  imageInputWrap: {
     flexDirection: 'row',
     alignItems: 'center',
   },
-  previewImage: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#1E293B',
-    borderWidth: 1,
-    borderColor: '#38BDF8',
-  },
-  avatarPickerRow: {
-    flexDirection: 'row',
-    marginVertical: 6,
-  },
-  avatarChoice: {
-    padding: 2,
+  avatarPreview: {
+    width: 40,
+    height: 40,
     borderRadius: 20,
+    backgroundColor: '#27272a',
+  },
+  avatarPickerList: {
+    flexDirection: 'row',
+    marginVertical: 4,
+  },
+  sampleAvatarItem: {
     marginRight: 8,
+    borderRadius: 20,
     borderWidth: 2,
     borderColor: 'transparent',
+    padding: 1,
   },
-  avatarChoiceSelected: {
-    borderColor: '#38BDF8',
+  sampleAvatarActive: {
+    borderColor: '#fafafa',
   },
-  choiceThumb: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+  sampleAvatarImg: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
   },
-  modalFooter: {
+  dialogFooter: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
-    gap: 10,
-    marginTop: 18,
+    gap: 8,
+    marginTop: 16,
     borderTopWidth: 1,
-    borderTopColor: '#1E293B',
+    borderTopColor: '#27272a',
     paddingTop: 14,
   },
-  deleteConfirmBtn: {
-    backgroundColor: '#DC2626',
+  deleteConfirmButton: {
+    backgroundColor: '#ef4444',
     paddingHorizontal: 14,
-    paddingVertical: 10,
-    borderRadius: 8,
+    paddingVertical: 8,
+    borderRadius: 6,
   },
-  deleteConfirmBtnText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '700',
+  deleteConfirmButtonText: {
+    color: '#ffffff',
+    fontSize: 12,
+    fontWeight: '600',
   },
 });
