@@ -3,7 +3,7 @@
 - **Học phần**: Phát triển Ứng dụng Đa nền tảng (React Native / Flutter / .NET MAUI)
 - **Sinh viên thực hiện**: NMHoangDev
 - **Link GitHub Source Code**: [https://github.com/NMHoangDev/danentang.git](https://github.com/NMHoangDev/danentang.git)
-- **File Video Demo nộp kèm**: `video_demo_qlhocphan.mp4` (Đã quay tự động mô phỏng thao tác người thật, chuẩn Full HD H.264 thời lượng 1 phút 04 giây có sẵn tại thư mục gốc dự án)
+- **File Video Demo nộp kèm**: `video_demo_qlhocphan.mp4` (Đã quay tự động mô phỏng thao tác người thật, chuẩn Full HD H.264 thời lượng 47 giây trôi chảy 100%, không kẹt/lag, có sẵn tại thư mục gốc dự án)
 - **Cơ sở dữ liệu**: Supabase PostgreSQL / JSON (Collection: `GiangVien`)
 
 ---
