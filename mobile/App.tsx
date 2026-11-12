@@ -1,4 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
+import * as ImagePicker from 'expo-image-picker';
 import React, { useCallback, useEffect, useState } from 'react';
 import {
   ActivityIndicator,
@@ -135,6 +136,29 @@ export default function App(): React.JSX.Element {
     setFormImage(SAMPLE_AVATARS[Math.floor(Math.random() * SAMPLE_AVATARS.length)]);
     setFormSumClass('4');
     setIsModalOpen(true);
+  };
+
+  // Chọn ảnh trực tiếp từ thiết bị (Nền tảng di động & Web qua ImagePicker)
+  const pickImageFromDevice = async () => {
+    try {
+      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permissionResult.granted) {
+        showToast('error', 'Cần cấp quyền truy cập thư viện ảnh trên thiết bị');
+        return;
+      }
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.7,
+      });
+      if (!result.canceled && result.assets && result.assets.length > 0) {
+        setFormImage(result.assets[0].uri);
+        showToast('success', 'Đã tải ảnh thành công từ thiết bị!');
+      }
+    } catch (err: any) {
+      showToast('error', `Lỗi chọn ảnh: ${err.message || err}`);
+    }
   };
 
   // Mở modal Sửa
@@ -511,6 +535,12 @@ export default function App(): React.JSX.Element {
                     placeholder="https://..."
                     placeholderTextColor="#71717a"
                   />
+                </View>
+
+                <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                  <Pressable style={styles.toolButton} onPress={pickImageFromDevice}>
+                    <Text style={styles.toolButtonText}>📁 Chọn ảnh từ thiết bị / máy tính</Text>
+                  </Pressable>
                 </View>
 
                 <Text style={styles.subLabel}>Hoặc nhấp chọn avatar mẫu:</Text>
