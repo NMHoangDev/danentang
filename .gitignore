@@ -1,0 +1,65 @@
+# ============================================================================
+# ZERO-LEAK BRAIN & TOOLS PROTECTION PROTOCOL (MANDATORY)
+# ============================================================================
+.aevum/
+.agents/
+_aevum/
+_agents/
+GEMINI.md
+AGENTS.md
+tools/
+source_code_skill/
+skillstudyforalluser/
+TONGQUAN.md
+
+# ============================================================================
+# NODE.JS / TYPESCRIPT / MONOREPO
+# ============================================================================
+node_modules/
+dist/
+build/
+coverage/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+backend/data/
+data/
+
+# ============================================================================
+# REACT NATIVE / EXPO
+# ============================================================================
+.expo/
+.expo-shared/
+web-build/
+android/
+ios/
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+*.orig.*
+
+# ============================================================================
+# ENVIRONMENT & FIREBASE SECRETS
+# ============================================================================
+.env
+.env.*
+!.env.example
+*serviceAccountKey*.json
+*firebase-adminsdk*.json
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+
+# ============================================================================
+# IDE & OS
+# ============================================================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

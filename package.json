@@ -1,0 +1,19 @@
+{
+  "name": "danentang-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Base Project: React Native (Expo) + Node.js/TypeScript Clean Architecture Backend + Supabase PostgreSQL Database",
+  "scripts": {
+    "backend:dev": "npm --prefix backend run dev",
+    "backend:build": "npm --prefix backend run build",
+    "backend:start": "npm --prefix backend run start",
+    "backend:typecheck": "npm --prefix backend run typecheck",
+    "backend:test": "npm --prefix backend run test",
+    "mobile:start": "npm --prefix mobile run start",
+    "mobile:android": "npm --prefix mobile run android",
+    "mobile:ios": "npm --prefix mobile run ios",
+    "mobile:web": "npm --prefix mobile run web",
+    "mobile:typecheck": "npm --prefix mobile run typecheck",
+    "typecheck": "npm run backend:typecheck && npm run mobile:typecheck"
+  }
+}
